@@ -9,8 +9,7 @@
     let website;
     let author;
     let social;
-    let total;        
-    let regex = RegExp('[ |,|\?|\*|\+|\#|\&|\%|\$|\^]');
+    let total;
 
     $: message = "";
 
@@ -27,51 +26,30 @@
         message = "Submitting your site...";
         var data = {website: website, author: author, social: social};
 
-        if(regex.test(website)) {
-            websiteok = false;
-            message = "We need a site like this: http://www.mysite.com"; 
-        } else {
-            const response = await fetch(`API_URL`, {
+        const response = await fetch(`API_URL`, {
             method: 'POST',
             body: JSON.stringify(data),
-            headers:{
+            headers: {
                 'Content-Type': 'application/json'
             }
-            })
-            
-            var responseMessage = await response.json();
+        })
 
-            if (response.ok) {
-                message = responseMessage.msg;
-                setTimeout(function(){
-                    location.reload();
-                }, 2000);
-            } else {
-                if(response.status === 418) {
-                    message = responseMessage.msg;
-                } else if (response.status === 429) {
-                    message = responseMessage.msg;
-                } else {
-                    message = responseMessage.msg;
-                }
-                throw Error(response.statusText);
-            }
-        }
+        var responseMessage = await response.json();
 
-    }
-
-    function websiteRegex(event) {
-
-        if (website && !website.match(/^http([s]?):\/\/.*/)) {
-            website = 'http://' + website;
-        }
-
-        if(regex.test(website)) {
-            websiteok = false;
-            message = "We need a site like this: http://www.mysite.com";
+        if (response.ok) {
+            message = responseMessage.msg;
+            setTimeout(function() {
+                location.reload();
+            }, 2000);
         } else {
-            websiteok = true;
-            message = "";
+            if (response.status === 418) {
+                message = responseMessage.msg;
+            } else if (response.status === 429) {
+                message = responseMessage.msg;
+            } else {
+                message = responseMessage.msg;
+            }
+            throw Error(response.statusText);
         }
 
     }
@@ -147,7 +125,7 @@
         <div class="fh-right">
             <div>
                 <form id="upload-form" on:submit|preventDefault={handleSubmit}>
-                    <input type="text" placeholder="http://www.mysite.com" bind:value={ website } on:change={websiteRegex} maxlength="80">
+                    <input type="url" placeholder="http://www.mysite.com" bind:value={ website } maxlength="80">
                     <div class="form-group">
                         <select name="social" id="social" bind:value={social}>
                             <option value="twitter">twitter</option>
@@ -160,7 +138,7 @@
                     </div>
                     <div class="form-buttons">
                         <button type="reset" class="button-neutral" on:click={resetform}>Cancel</button>
-                        <button type="submit" class="button-secondary" disabled={!websiteok || !author}>Submit</button>
+                        <button type="submit" class="button-secondary" disabled={!website || !author}>Submit</button>
                     </div>
                 </form>
                 <hr>
